@@ -29,7 +29,7 @@ socket.on('roundComplete', function(data) {
 //If this client has been marked as a host, create a room.
 function createRoom(players, winningScore, cardSets) {
 	var object = {
-		cardSets: ["58e887990d79340011e5f689"],
+		cardSets: ["58e89f8646d21c0011cf5469"],
 		playerLimit: players,
 		scoreLimit: winningScore
 	}
@@ -85,8 +85,9 @@ function Getter() {
 	this.get = function(url, callback) {
 		var req = new XMLHttpRequest();
 		req.onreadystatechange = function() {
-			if (req.readystate == 4 && req.status == 200) {
-				callback(req.responseText);
+			if (req.readyState == 4 && req.status == 200) {
+				callback(JSON.parse(req.response)[0]);
+				
 			}
 		}
 		req.open('GET', url, true);
@@ -96,9 +97,8 @@ function Getter() {
 	this.post = function(url, callback) {
 		var req = new XMLHttpRequest();
 		req.onreadystatechange = function() {
-			if (req.readystate == 4 && req.status == 200) {
-				callback(req.responseText);
-			}
+			if (req.readyState == 4 && req.status == 200) {
+				callback(JSON.parse(req.response)[0]); }
 		}
 		req.open('POST', url, true);
 		req.send(null);
@@ -106,32 +106,33 @@ function Getter() {
 	}
 }
 function Card(id, text, type, draw, pick) {
-	this.id = id;
-	this.text = text;
-	this.type = type;
-	this.draw = draw;
-	this.pick = pick;
+	this.id = id;		//This card's ID. used as a key in the cards arrays.
+	this.text = text;	//This card's full text.
+	this.type = type;	//Black or White?
+	this.draw = draw;	//How many cards to draw
+	this.pick = pick;	//How many cards to pick and play.
 }
 //Use Getter to populate the local array of all white cards.
 function getCards(collectionId) {
 	getter.get('http://triggerwarning.herokuapp.com/api/cardsets/' + collectionId + '?population=true', function(response) {
-		console.log(response);
 		for (var i = 0; i < response.whiteCards.length; i++) {
-			whiteCards[response.whiteCards[i].id] = response.whiteCards[i].text;
+			var cIn = response.whiteCards[i];
+			var c = new Card(cIn.id, cIn.text, cIn.type, cIn.draw, cIn.pick);
+			whiteCards[cIn.id] = c;
 		}
-		console.log("Got White Cards")
+		console.log("Built Local White Card Array.");
 		for (var i = 0; i < response.blackCards.length; i++) { 
-			blackCards[response.whiteCards[i].id] = response.blackCards[i].text;
+			var cIn = response.blackCards[i];
+			var c = new Card(cIn.id, cIn.text, cIn.type, cIn.draw, cIn.pick);
+			blackCards[cIn.id] = c;
 		}
+		console.log("Built Local Black Card Array.");
 	});
 }
 //Use Getter to populate the local array of all black cards.
 function getBlackCards(collectionId) {
 	getter.get('url', function(response) {
 		//Find the String in the response.
-		console.log(response);
-		text = "Temp Black Card Value, Rick fix this.";
-		whiteCards[id] = text;
 	});
 }
 //Retrieve the text of a white card based on its id. 
@@ -142,4 +143,8 @@ function getWhiteCardText(id) {
 function getBlackCardText(id) {
 	return blackCards[id];
 }
+console.log("Getting Cards");
+getCards("58e89f8646d21c0011cf5469");
 createRoom(69, 420);
+
+

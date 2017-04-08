@@ -1,16 +1,67 @@
-
-
-
-
-var startingCards = 10;
 //Globals
 var bgColor;
 var whiteCardColor;
 var blackCardColor;
 var cards = [];
-//Card Class
-function Card(xStart, yStart, angle, width, cardText, type, guid){
-	this.guid = guid;
+
+var canvasState = 0;
+
+function Client() {
+
+}
+
+function setup() {
+	canvas = createCanvas(windowWidth,windowHeight);
+	canvas.parent('game');
+	colorMode(HSB, 100, 100, 100);
+	rectMode(CENTER);
+	bgColor = color(100, 80, 50);
+	whiteCardColor = color(220);
+	blackCardColor = color(20);
+}
+
+function draw() {
+	background(bgColor);
+	switch(canvasState) {
+		case 0: //Create or join room.
+			push();
+			textStyle(BOLD);
+			textSize(80);
+			fill(120);
+			text("TriggerWarning", 20, 100);
+			roomCreate = createButton("Create New Game");
+			roomCreate.position( 20, 120);
+			pop();
+			break;
+		case 1: //Display Room Creation Options.
+			push();
+			text("");
+			pop();
+			break;
+		case 2:
+			push();
+
+			pop();
+			break;
+		case 3:
+			push();
+
+			pop();
+			break;
+		default:
+			push();
+
+			pop();
+			
+	}
+	text(frameRate(), 10, 20);
+}
+function windowResized() {
+	resizeCanvas(windowWidth,windowHeight);
+}
+
+
+/*function Card(xStart, yStart, angle, width, cardText, type){
 	this.x = xStart;
 	this.y = yStart;
 	this.w = width;
@@ -57,31 +108,4 @@ function Hand() {
 			c.draw(); 
 		}
 	}
-}
-
-function setup() {
-	canvas = createCanvas(windowWidth,windowHeight);
-	canvas.parent('game');
-	colorMode(HSB, 100, 100, 100);
-	rectMode(CENTER);
-	bgColor = color(100, 80, 50);
-	whiteCardColor = color(220);
-	blackCardColor = color(20);
-	
-	hand = new Hand();
-	for (var i = 0; i < startingCards; i++) {
-		hand.cards[i] =  new Card(0, 0, .5, 200, "Ayy", "OTHER", 123);
-	}
-}
-
-function draw() {
-	background(bgColor);
-	hand.draw();
-	//for (var i = 0; i < hand.cards.length; i++) {
-	//	hand.cards[i].draw();
-	//}
-	text(frameRate(), 10, 20);
-}
-function windowResized() {
-	resizeCanvas(windowWidth,windowHeight);
-}
+}*/

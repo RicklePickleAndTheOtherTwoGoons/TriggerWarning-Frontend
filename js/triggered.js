@@ -1,41 +1,50 @@
 //Globals
-var bgColor;
-var whiteCardColor;
-var blackCardColor;
 var cards = [];
 
 var canvasState = 0;
+var client = new Client();
 
 function Client() {
+	var cards = [];
+	var host = false;
+	var czar = false;
 
+	var roomCode = "ASDF";
 }
 
 function setup() {
 	canvas = createCanvas(windowWidth,windowHeight);
 	canvas.parent('game');
-	colorMode(HSB, 100, 100, 100);
+
 	rectMode(CENTER);
-	bgColor = color(100, 80, 50);
-	whiteCardColor = color(220);
-	blackCardColor = color(20);
+
+
+	//Create/Join Room DOM Features
+	roomCreate = createButton("Create New Game");
+	roomCreate.position(20, 140);
+	roomCreate.mousePressed(buildRoom);//Can't pass parameters to functions with this terrible lib.
+	roomId = createInput();
+	roomId.position(roomCreate.x + roomCreate.width + 20, roomCreate.y + 1);
+	roomIdSubmit = createButton("Enter Room Code");
+	roomIdSubmit.position(roomId.x + roomId.width, roomId.y - 1);
 }
 
 function draw() {
-	background(bgColor);
+	background(255,255,255);
 	switch(canvasState) {
 		case 0: //Create or join room.
 			push();
 			textStyle(BOLD);
 			textSize(80);
-			fill(120);
 			text("TriggerWarning", 20, 100);
-			roomCreate = createButton("Create New Game");
-			roomCreate.position( 20, 120);
+			roomCreate.show();
+			roomId.show();
+			roomIdSubmit.show();
 			pop();
 			break;
 		case 1: //Display Room Creation Options.
 			push();
-			text("");
+			text(client.roomCode, 10 ,30);
 			pop();
 			break;
 		case 2:
@@ -54,11 +63,21 @@ function draw() {
 			pop();
 			
 	}
-	text(frameRate(), 10, 20);
+	push();
+	text(floor(frameRate()), 10, 20);
+	pop();
 }
 function windowResized() {
 	resizeCanvas(windowWidth,windowHeight);
 }
+
+function buildRoom() {
+	var cardSets = ["58e89f8646d21c0011cf5469"];
+	var playerLimit = 10;
+	var scoreLimit = 10;
+	createRoom(playerLimit, scoreLimit, cardSets);
+}
+
 
 
 /*function Card(xStart, yStart, angle, width, cardText, type){

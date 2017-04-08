@@ -27,38 +27,56 @@ socket.on('roundComplete', function(data) {
 
 
 //If this client has been marked as a host, create a room.
-function createRoom(players, winningScore, cardSets) {
+function createGame(players, winningScore, cardSets) {
 	var object = {
 		cardSets: ["58e89f8646d21c0011cf5469"],
 		playerLimit: players,
 		scoreLimit: winningScore
 	}
 	socket.emit('gameCreate', object);
+	
+	//Client Stuff
+	isHost = true;
 }
 socket.on('gameCreated', function(data) {
 	console.log("Room Created.");
 	console.log(data);
+	roomCode = data.roomCode;
 	//Display the Room Id until the host presses a start button.
+	canvasState = 1;
 });
 
 
 //Clients send a room id to the server and are placed into that room if it is found.
-function joinRoom(roomId) {
+function joinGame(roomId) {
 	var object = {
-		id: roomId
+		roomCode: roomId
 	}
 	socket.emit('gameJoin', object);
 }
 socket.on('gameJoined', function(data) {
 	console.log("Room Joined.");
 	console.log(data);
-	//Go use REST API to get all the card packs returned..
+	//Go use REST API to get all the card packs returned...
+	getCards("58e89f8646d21c0011cf5469");
+	canvasState = 2;
+	console.log("Connected to Room.");
 });
 socket.on('gameNotFound', function(data) {
 	console.log("Room Not Found.");
 	console.log(data);
 	//Bring the user back to the room join form.
+	canvasState = 0;
 });
+socket.on('playerJoin', function(data) {
+	console.log("Player Joined. " + data.name);
+	players.push(data.name);
+});
+socket.on('error', function(data) {
+	console.log(data);
+});
+//Start the game.
+
 
 //Play a Card.
 function playCards(playedCards) {
@@ -78,6 +96,8 @@ function pickCard(pickedCard) {
 	socket.emit('pickCard', object);
 	console.log("Picked " + object);
 }
+
+
 
 
 //Object to make requests of the REST API.
@@ -143,8 +163,5 @@ function getWhiteCardText(id) {
 function getBlackCardText(id) {
 	return blackCards[id];
 }
-console.log("Getting Cards");
-getCards("58e89f8646d21c0011cf5469");
-createRoom(69, 420);
 
 

@@ -3,6 +3,8 @@ var getter = new Getter();
 //Arrays of all cards in use. It is faster to pass an ID to these than to the database.
 var whiteCards = new Array();
 var blackCards = new Array();
+//Go use REST API to get all the card packs returned...
+getCards("58e89f8646d21c0011cf5469")
 
 //Round begins. If the black card is a pick2, read an array of new white cards.
 socket.on('roundBegin', function(data) {
@@ -30,8 +32,8 @@ socket.on('roundComplete', function(data) {
 function createGame(players, winningScore, cardSets) {
 	var object = {
 		cardSets: ["58e89f8646d21c0011cf5469"],
-		playerLimit: players,
-		scoreLimit: winningScore
+		playerLimit: 2,
+		scoreLimit: 2
 	}
 	socket.emit('gameCreate', object);
 	
@@ -40,12 +42,24 @@ function createGame(players, winningScore, cardSets) {
 }
 socket.on('gameCreated', function(data) {
 	console.log("Room Created.");
-	console.log(data);
 	roomCode = data.roomCode;
 	//Display the Room Id until the host presses a start button.
 	canvasState = 1;
 });
+socket.on('gameStart', function(data) {
+	//Set the gameState to 2. Someone gets a card czar boolean.
+	canvasState = 2;
+	
+});
 
+socket.on('firstHand', function(data) {
+	console.log("First Hand Received.");
+	hand = data;
+	for (var i = 0; i < hand.length; i++) {
+		console.log(getWhiteCardText(hand[i]));
+	}
+	
+});
 
 //Clients send a room id to the server and are placed into that room if it is found.
 function joinGame(roomId) {
@@ -57,9 +71,7 @@ function joinGame(roomId) {
 socket.on('gameJoined', function(data) {
 	console.log("Room Joined.");
 	console.log(data);
-	//Go use REST API to get all the card packs returned...
-	getCards("58e89f8646d21c0011cf5469");
-	canvasState = 2;
+	canvasState = 3;
 	console.log("Connected to Room.");
 });
 socket.on('gameNotFound', function(data) {
@@ -75,8 +87,9 @@ socket.on('playerJoin', function(data) {
 socket.on('error', function(data) {
 	console.log(data);
 });
-//Start the game.
-
+socket.on('gameFull', function(data) {
+	socket.emit('gameStart');
+});
 
 //Play a Card.
 function playCards(playedCards) {
@@ -112,7 +125,7 @@ function Getter() {
 		}
 		req.open('GET', url, true);
 		req.send(null);
-		console.log("I'm the human green screen.");
+		//console.log("I'm the human green screen.");
 	}
 	this.post = function(url, callback) {
 		var req = new XMLHttpRequest();
@@ -122,7 +135,7 @@ function Getter() {
 		}
 		req.open('POST', url, true);
 		req.send(null);
-		console.log("Viner of the month.");
+		//console.log("Viner of the month.");
 	}
 }
 function Card(id, text, type, draw, pick) {
@@ -137,8 +150,9 @@ function getCards(collectionId) {
 	getter.get('http://triggerwarning.herokuapp.com/api/cardsets/' + collectionId + '?population=true', function(response) {
 		for (var i = 0; i < response.whiteCards.length; i++) {
 			var cIn = response.whiteCards[i];
-			var c = new Card(cIn.id, cIn.text, cIn.type, cIn.draw, cIn.pick);
-			whiteCards[cIn.id] = c;
+			var c = new Card(cIn._id, cIn.text, cIn.type, cIn.draw, cIn.pick);
+			whiteCards[i] = {id:cIn._id, text:cIn.text, type:cIn.type, draw:cIn.draw, pick:cIn.pick};
+			//console.log(whiteCards[i].text);
 		}
 		console.log("Built Local White Card Array.");
 		for (var i = 0; i < response.blackCards.length; i++) { 
@@ -157,7 +171,12 @@ function getBlackCards(collectionId) {
 }
 //Retrieve the text of a white card based on its id. 
 function getWhiteCardText(id) {
-	return whiteCards[id];
+	for (var i = 0; i < whiteCards.length; i++) {
+		if (whiteCards[i].id == id) {
+			return whiteCards[i].text;
+		}
+	}
+	return "Card Not Found";
 }
 //Retrieve the text of a black card based on its id.
 function getBlackCardText(id) {

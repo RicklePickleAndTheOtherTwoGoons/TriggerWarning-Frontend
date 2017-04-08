@@ -31,7 +31,8 @@ function setup() {
 
 function draw() {
 	background(255,255,255);
-	text(floor(frameRate()), 10, 20);
+	textSize(15);
+	text("FPS " + floor(frameRate()), 10, 20);
 	switch(canvasState) {
 		case 0: //Join or Create - Enter room number or create hardcoded room.
 			push();
@@ -58,25 +59,29 @@ function draw() {
 			break;
 		case 2: //Hand / Play
 			push();
-			if (isCzar) {
-				textSize(80);
-				text("You are the Card Czar.", 20, 100);
+			roomCreate.hide();
+			roomId.hide();
+			roomIdSubmit.hide();
+			/*if (isCzar) {
 				textSize(60);
-				text("Wait for other players, then judge them.", 20, 180);
-				text("The text of a black card goes here, and on the host.", 20, 260);
+				text("You are the Card Czar.", 20, 80);
+				textSize(15);
+				text("Wait for other players, then judge them.", 20, 100);
+				text("The text of a black card goes here, and on the host.", 20, 140);
 			} else {
-				textSize(80);
-				text("Choose a card to play.", 20, 100);
-				textSize(20);
-				for (var i = 0; i < hand.length; i++) {
-					text(whiteCards[hand[i]], 20, 140 + (20*i);
-				}
-			}
+				
+			}*/
+			textSize(80);
+			text("Choose a card to play.", 20, 100);
 			pop();
 			break;
-		case 3: //Card Czar Wait
+		case 3: //Wait for game start
 			push();
-			
+			roomCreate.hide();
+			roomId.hide();
+			roomIdSubmit.hide();
+			textSize(80);
+			text("Please wait for the game to start.", 20, 100, width, height);
 			pop();
 			break;
 		case 4: //Card Czar Select
@@ -102,7 +107,7 @@ function windowResized() {
 //Wrappers around buttons actions.
 function createGameWrapper() {
 	console.log("Building Room...");
-	createGame(10, 10, ["58e89f8646d21c0011cf5469"]);
+	createGame(2, 2, ["58e89f8646d21c0011cf5469"]);
 }
 function joinGameWrapper() {
 	roomCode = roomId.value();
@@ -110,5 +115,9 @@ function joinGameWrapper() {
 	joinGame(roomCode.toUpperCase());
 }
 function startGameWrapper() {
-	
+	if (isHost) {
+		console.log("Starting Game...");
+		socket.emit('gameStart');
+		console.log("Game Start Requested");
+	}
 }

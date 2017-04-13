@@ -12,7 +12,7 @@ function setup() {
 	colorMode(HSB, 100, 100, 100, 1);
 	rectMode(CENTER);
 	//Set up the vars object.
-	vars = new CanvasVars;
+	vars = new CanvasVars();
 	vars.calculate();
 	vars.backgroundColor = color(1, 80, 60);
 	vars.foregroundColor = color(0, 0, 100);//0 80 30
@@ -118,8 +118,6 @@ function CanvasVars() {
 	this.yCenter;
 	this.cardWidth;
 	this.cardHeight;
-	this.cardHandAngle;
-	this.cardHoverReactionDistance;
 	
 	this.largeTextSize;
 	this.mediumTextSize;
@@ -130,13 +128,74 @@ function CanvasVars() {
 		this.yCenter = height / 2;
 		this.cardWidth = width / 10;
 		this.cardHeight = this.cardWidth * 1.5;
-		this.cardHandAngle = 0.1;
 		this.largeTextSize = max(new Array(ceil(width*0.05), 36));
 		this.mediumTextSize = max(new Array(ceil(width*0.015), 18));
 		this.smallTextSize = max(new Array(ceil(width*0.01), 10));
 	}
 }
-
+//PlaySpace is where cards are played to locally. Global object though.
+function PlaySpace() {
+	this.currentlyPlaying = []; //Array of cards to be turned into a bundle when confirmed.
+	this.cardsNeeded;// How many cards do we need to put in the bundle? 1,or 3
+	
+	this.draw = function() {
+		switch(this.cardsNeeded.length) { //Could do math for every possible case but we really only have 3 cases.
+			case 1:
+				var x1 = vars.xCenter;
+				var y = vars.yCenter;
+				if (this.currentlyPlaying[0] === null) {
+					var c = new CardSpace(x1, y, 0);
+					c.draw();
+				} else {
+					this.currentlyPlaying[0].draw(x1, y, 0);
+				}
+				break;
+			case 2:
+				var x1 = vars.xCenter - vars.cardWidth;
+				var x2 = vars.xCenter + vars.cardWidth;
+				var y = vars.yCenter;
+				if (this.currentlyPlaying[0] === null) {
+					var c = new CardSpace(x1, y, 0);
+					c.draw();
+				} else {
+					this.currentlyPlaying[0].draw(x1, y, 0);
+				}
+				if (this.currentlyPlaying[1] === null) {
+					var c = new CardSpace(x2, y, 0);
+					c.draw();
+				} else {
+					this.currentlyPlaying[1].draw(x2, y, 0);
+				}
+				break;
+			case 3:
+				var x1 = vars.xCenter - vars.cardWidth * 1.5;
+				var x2 = vars.xCenter;
+				var x3 = vars.xCenter + vars.cardWidth * 1.5;
+				var y = vars.yCenter;
+				if (this.currentlyPlaying[0] === null) {
+					var c = new CardSpace(x1, y, 0);
+					c.draw();
+				} else {
+					this.currentlyPlaying[0].draw(x1, y, 0);
+				}
+				if (this.currentlyPlaying[1] === null) {
+					var c = new CardSpace(x2, y, 0);
+					c.draw();
+				} else {
+					this.currentlyPlaying[1].draw(x2, y, 0);
+				}
+				if (this.currentlyPlaying[2] === null) {
+					var c = new CardSpace(x3, y, 0);
+					c.draw();
+				} else {
+					this.currentlyPlaying[2].draw(x3, y, 0);
+				}
+				break;
+			default:
+				console.log("Invalid cardsNeeded amount: " + this.cardsNeeded);
+		}
+	}
+}
 function Button(x, y, value, callback) {
 	this.x = x;
 	this.y = y;
@@ -298,6 +357,7 @@ function CardContent(id, fullText, color, draw, pick) {
 	this.color = color; //Either 'black' or 'white'
 	this.draw = draw; //0 for white.
 	this.pick = pick; //0 for white.
+	this.custom = false;
 }
 
 function Card(content, x, y, rotation, focused) {
@@ -416,7 +476,11 @@ function Hand(cards) {
 	this.removeCard = function(index) {
 		
 	}
+	this.addBundle =function(bundle) {
+	  
+	}
 }
+
 //A pile of cards or bundles of cards.
 function Pile(x, y, bundles) {
 	this.draw = function() {
@@ -473,5 +537,35 @@ function Pile(x, y, bundles) {
 		this.xNoise[i] = random(this.spread*2 - this.spread);
 		this.yNoise[i] = random(this.spread*2 - this.spread);
 		this.rotations[i] = random(2*PI);
+	}
+}
+
+/** Shapes **/
+function CardSpace(x, y, r){
+	this.draw = function(x, y, r) {
+		//Defaults.
+		if (x === undefined || y === undefined) {
+			x = this.x;
+			y = this.y;
+		}
+		if (r === undefined) {
+			r = 0;
+		}
+		//Draw.
+		push();
+		translate(x, y);//Rotate to the correct angle.
+		rotate(r);
+		//Draw the shape of the card.
+		noFill();
+		stroke(vars.foregroundColor);
+		strokeWeight(4);
+		rect(0, 0, vars.cardWidth, vars.cardHeight, 8);
+		
+		pop();
+	}
+}
+function Trophy(x, y, scale) {
+	this.draw = function() {
+		console.log("Rick, fix this.");
 	}
 }

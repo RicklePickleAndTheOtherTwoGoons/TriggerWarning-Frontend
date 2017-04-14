@@ -62,31 +62,35 @@ function setup() {
 	pile = new Pile(width - 400, 200, bs); //Example of a pile of bundles.
 	pole = new Pile(width - 400, 600, lessCards);
 	
+	ps = new PlaySpace(3);
+	
 }
 //Happens many times a second.
 function draw() {
 	background(vars.backgroundColor);
-	textSize(vars.largeTextSize);
-	textStyle(BOLD);
-	textAlign(CENTER);
-	fill(vars.foregroundColor);
-	text("Trigger Warning", vars.xCenter, vars.largeTextSize + 10);
-	textSize(vars.smallTextSize);
-	text("Like Cards Against Humanity, but legally separate.", vars.xCenter, vars.largeTextSize + vars.smallTextSize + 40);
-	text("- OR -", vars.xCenter, 255);
-	for (var i = 0; i < buttons.length; i++) {
-		buttons[i].draw();
-	}
-	for (var i = 0; i < textBoxes.length; i++) {
-		textBoxes[i].draw();
-	}
-	card.draw(300, 600, 2);
+	//textSize(vars.largeTextSize);
+	//textStyle(BOLD);
+	//textAlign(CENTER);
+	//fill(vars.foregroundColor);
+	//text("Trigger Warning", vars.xCenter, vars.largeTextSize + 10);
+	//textSize(vars.smallTextSize);
+	//text("Like Cards Against Humanity, but legally separate.", vars.xCenter, vars.largeTextSize + vars.smallTextSize + 40);
+	//text("- OR -", vars.xCenter, 255);
+	//for (var i = 0; i < buttons.length; i++) {
+		//buttons[i].draw();
+	//}
+	//for (var i = 0; i < textBoxes.length; i++) {
+		//textBoxes[i].draw();
+	//}
+	//card.draw(300, 600, 2);
 	hand.draw();
 	
-	bundle.draw(300, 200, 0);
+	//bundle.draw(300, 200, 0);
 	
-	pile.draw();
-	pole.draw();
+	//pile.draw();
+	//pole.draw();
+	
+	ps.draw();
 }
 //Happens when the user resizes their browser window.
 function windowResized() {
@@ -134,16 +138,16 @@ function CanvasVars() {
 	}
 }
 //PlaySpace is where cards are played to locally. Global object though.
-function PlaySpace() {
-	this.currentlyPlaying = []; //Array of cards to be turned into a bundle when confirmed.
-	this.cardsNeeded;// How many cards do we need to put in the bundle? 1,or 3
+function PlaySpace(cardsNeeded) {
+	this.currentlyPlaying = []; // Array of cards to be turned into a bundle when confirmed.
+	this.cardsNeeded = cardsNeeded;// How many cards do we need to put in the bundle? 1,or 3
 	
 	this.draw = function() {
-		switch(this.cardsNeeded.length) { //Could do math for every possible case but we really only have 3 cases.
-			case 1:
+		switch(this.cardsNeeded) { //Could do math for every possible case but we really only have 3 cases.
+			case 1: //This may be the ugliest method in this codebase.
 				var x1 = vars.xCenter;
-				var y = vars.yCenter;
-				if (this.currentlyPlaying[0] === null) {
+				var y = vars.yCenter - vars.cardHeight / 2;
+				if (this.currentlyPlaying[0] === undefined) {
 					var c = new CardSpace(x1, y, 0);
 					c.draw();
 				} else {
@@ -153,14 +157,14 @@ function PlaySpace() {
 			case 2:
 				var x1 = vars.xCenter - vars.cardWidth;
 				var x2 = vars.xCenter + vars.cardWidth;
-				var y = vars.yCenter;
-				if (this.currentlyPlaying[0] === null) {
+				var y = vars.yCenter - vars.cardHeight / 2;
+				if (this.currentlyPlaying[0] === undefined) {
 					var c = new CardSpace(x1, y, 0);
 					c.draw();
 				} else {
 					this.currentlyPlaying[0].draw(x1, y, 0);
 				}
-				if (this.currentlyPlaying[1] === null) {
+				if (this.currentlyPlaying[1] === undefined) {
 					var c = new CardSpace(x2, y, 0);
 					c.draw();
 				} else {
@@ -168,23 +172,24 @@ function PlaySpace() {
 				}
 				break;
 			case 3:
+			  
 				var x1 = vars.xCenter - vars.cardWidth * 1.5;
 				var x2 = vars.xCenter;
 				var x3 = vars.xCenter + vars.cardWidth * 1.5;
-				var y = vars.yCenter;
-				if (this.currentlyPlaying[0] === null) {
+				var y = vars.yCenter - vars.cardHeight / 2;
+				if (this.currentlyPlaying[0] === undefined) {
 					var c = new CardSpace(x1, y, 0);
 					c.draw();
 				} else {
 					this.currentlyPlaying[0].draw(x1, y, 0);
 				}
-				if (this.currentlyPlaying[1] === null) {
+				if (this.currentlyPlaying[1] === undefined) {
 					var c = new CardSpace(x2, y, 0);
 					c.draw();
 				} else {
 					this.currentlyPlaying[1].draw(x2, y, 0);
 				}
-				if (this.currentlyPlaying[2] === null) {
+				if (this.currentlyPlaying[2] === undefined) {
 					var c = new CardSpace(x3, y, 0);
 					c.draw();
 				} else {
@@ -194,6 +199,12 @@ function PlaySpace() {
 			default:
 				console.log("Invalid cardsNeeded amount: " + this.cardsNeeded);
 		}
+	}
+	
+	this.addCard = function(card, position) {
+	  if (position < this.cardsNeeded && position > 0 && card instanceof Card) {
+	    this.currentlyPlaying[position] = card;
+	  }
 	}
 }
 function Button(x, y, value, callback) {
@@ -443,12 +454,38 @@ function Bundle(cards) {
 function Hand(cards) {
 	this.cards = cards;
 	this.yNoise = [];
+	this.selected = -1;
 	for (var i = 0; i < cards.length + 2; i++) {
 		this.yNoise[i] = random(5);
 	}
-	this.selected = -1;
+	this.rNoise = [];
+	for (var i = 0; i < cards.length + 2; i++) {
+	  this.rNoise[i] = random(.1) - .05;
+	}
 	
 	this.draw = function() {
+	  //Find Selected, Draw from outside in to the index, drawing it last.
+	  var offset = vars.cardWidth/2;
+	  if (this.selected > 0 && this.selected < this.cards.length) {
+	    
+	    for (var l = 0; l < this.selected; l++) {
+	      this.cards[l].draw(200 + (offset*l), 200 + this.yNoise[l], this.rNoise[l]);
+	    }
+	    for (var r = cards.length - 1; r > this.selected; r--) {
+	      this.cards[r].draw(200 + (offset*r), 200 + this.yNoise[r], this.rNoise[r]);
+	    }
+	    this.cards[this.selected].draw(200 + (offset*r), 200 + this.yNoise[r] + offset, this.rNoise[r]);
+	  } else {
+	    for (var i = 0; i < this.cards.length; i++) {
+	      this.cards[i].draw(200 + (offset*i), 200 + this.yNoise[i], this.rNoise[i]);
+	    }
+	  }
+	  
+	  //for (var i = 0; i < cards.length; i++) {
+      //this.cards[i].draw(200 + (vars.cardWidth*i), 200 + this.yNoise[i], this.rNoise[i]);
+	  //}
+	}
+	/*this.draw = function() {
 		if (mouseY > height - vars.cardHeight && mouseX > vars.xCenter - vars.cardWidth*3 && mouseX < vars.xCenter + vars.cardWidth * 3) {
 			this.selected = floor((mouseX - (vars.xCenter - vars.cardWidth*3)) / (vars.cardWidth*6) * 10);
 		} else {
@@ -469,7 +506,7 @@ function Hand(cards) {
 				cards[i].draw(xRelative, yRelative - this.yNoise[i], rotation);
 			}
 		}
-	}
+	}*/
 	this.addCard = function(card) {
 		
 	}
@@ -542,6 +579,10 @@ function Pile(x, y, bundles) {
 
 /** Shapes **/
 function CardSpace(x, y, r){
+  this.x = x;
+  this.y = y;
+  this.r = r;
+  
 	this.draw = function(x, y, r) {
 		//Defaults.
 		if (x === undefined || y === undefined) {

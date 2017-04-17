@@ -68,12 +68,19 @@ function setup() {
 	cards.push(c1);
 	hand = new Hand(cards); //Example of a hand of cards.
 	var lessCards = [];
-	lessCards.push(card);
-	lessCards.push(card);
-	lessCards.push(card);
+	lessCards.push(c2);
+	lessCards.push(c3);
+	lessCards.push(c4);
 	bundle = new Bundle(lessCards); //Example of a bundle of cards.
-	
+	lessCards = [];
+	lessCards.push(c5);
+	lessCards.push(c6);
+	lessCards.push(c7);
 	bandle = new Bundle(lessCards);
+	lessCards = [];
+	lessCards.push(c8);
+	lessCards.push(c9);
+	lessCards.push(c1);
 	bondle = new Bundle(lessCards);
 	var bs = [];
 	bs.push(bundle);
@@ -85,6 +92,7 @@ function setup() {
 	
 	ps = new PlaySpace(3);
 	
+	pick = new PickSpace(b1, bs);
 }
 //Happens many times a second.
 function draw() {
@@ -104,16 +112,16 @@ function draw() {
 		//textBoxes[i].draw();
 	//}
 	//card.draw(300, 600, 2);
-	ps.draw();
-	hand.draw(ps);
-	b1.draw(100, 300, 0);
+	//ps.draw();
+	//hand.draw(ps);
+	//b1.draw(100, 300, 0);
 	
 	//bundle.draw(300, 200, 0);
 	
 	//pile.draw();
 	//pole.draw();
 	
-	
+	pick.draw();
 }
 //Happens when the user resizes their browser window.
 function windowResized() {
@@ -131,13 +139,24 @@ function keyPressed() {
 	for (var i = 0; i < textBoxes.length; i++) {
 		textBoxes[i].input();
 	}
-	
 }
 function mousePressed() {
 	vars.mousePressedX = mouseX;
 	vars.mousePressedY = mouseY;
 }
-
+function mouseWheel(event) {
+	if (vars.scrollTimeout < frameCount) {
+		vars.scrollTimeout = frameCount + 15;
+		vars.scrolled = true;
+		if (event.delta < 0) {
+			vars.scrollDir = -1;
+			console.log("Scrolled up");
+		} else {
+			vars.scrollDir = 1;
+			console.log("Scrolled down");
+		}
+	}
+}
 /** Objects **/
 function CanvasVars() {
 	this.backgroundColor;
@@ -157,6 +176,10 @@ function CanvasVars() {
 	this.mousePressedX;//Position of the mouse when the button was pressed.
 	this.mousePressedY;
 	
+	this.scrollTimeout = 0;
+	this.scrolled = false;
+	this.scrollDir = 0;
+	
 	this.calculate = function () {
 		this.xCenter = width / 2;
 		this.yCenter = height / 2;
@@ -172,7 +195,7 @@ function PlaySpace(cardsNeeded) {
 	this.currentlyPlaying = []; // Array of cards to be turned into a bundle when confirmed.
 	this.cardsNeeded = cardsNeeded;// How many cards do we need to put in the bundle? 1,or 3
 	this.cardSpaces = [];
-	this.submitButton = new Button(vars.xCenter, vars.yCenter - vars.cardHeight - 30, "Submit Cards", this.submitCards);
+	this.submitButton = new Button(vars.xCenter, vars.yCenter - vars.cardHeight - 30, "Submit", this.submitCards);
 	for (var i = 0; i < this.cardsNeeded; i++) {
 		this.cardSpaces[i] = new CardSpace;
 	}
@@ -285,18 +308,40 @@ function PlaySpace(cardsNeeded) {
 function PickSpace(blackCard, bundles) {
 	this.blackCard = blackCard;
 	this.bundles = bundles;
-	this.selected = -1;
+	this.selected = 1;
+	this.pickButton = new Button(width - vars.cardWidth, vars.yCenter, "Pick This Set", this.pick);
 	this.draw = function() {
 		//Draw the black card.
-		
+		this.blackCard.draw(vars.cardWidth, vars.yCenter, 0, 1.1);
 		//Did the czar scroll or swipe? Change selected to the proper bundle.
-		
+		if (vars.scrollDir != 0) {
+			this.selected = (this.selected + vars.scrollDir);
+			if (this.selected < 0) {
+				this.selected = this.bundles.length - 1;
+			}
+			if (this.selected > this.bundles.length - 1) {
+				this.selected = 0;
+			}
+			vars.scrollDir = 0;
+			console.log(this.selected);
+		}
 		//Draw the current bundle, but draw each card individually.
-		
+		for (var i = 0; i < this.bundles[this.selected].length; i++) {
+			this.bundles[this.selected].cards[i].draw(vars.cardWidth * 1.5* (i + 2), vars.yCenter, 0, 1.1);
+		}
 		//Draw the surrounding bundles.
-		
+		for (var i = 0; i < this.selected; i++) {
+			for (var j = 0; j < this.bundles[this.selected].length; j++) {
+				this.bundles[i].cards[j].draw(vars.cardWidth * 1.5* (j + 2), vars.yCenter - vars.cardHeight - 50, 0, 0.8);
+			}
+		}
+		for (var i = this.bundles.length - 1; i > this.selected; i--) {
+			for (var j = 0; j < this.bundles[this.selected].length; j++) {
+				this.bundles[i].cards[j].draw(vars.cardWidth * 1.5* (j + 2), vars.yCenter + vars.cardHeight + 50, 0, 0.8);
+			}
+		}
 		//Draw the pick button.
-		
+		this.pickButton.draw();
 	}
 	//Send back the winning cards and let the server determine who won.
 	this.pick = function(bundle) {
@@ -533,7 +578,7 @@ function Card(content, x, y, rotation, focused) {
 //Some number of cards to be kept together. Used for draw 2 pick 3.
 function Bundle(cards) {
 	this.cards = cards;//Array of cards, in order
-	
+	this.length = this.cards.length;
 	this.draw = function(x, y, r) {
 		for (var i = 0; i < cards.length; i++) {
 			cards[i].draw(x + (i * 0), y + (i * 0), r + (i / 10));

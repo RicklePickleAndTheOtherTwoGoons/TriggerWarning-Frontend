@@ -31,16 +31,16 @@ function setup() {
 	});
 	
 	//Testing Cards.
-	var c0c = new CardContent(1, "Men's Rights activisim bleeding into the brony fandom.", 'white', 0, 0); //Use CardContent to make cards.
-	var c2c = new CardContent(1, "2", 'white', 0, 0);
-	var c3c = new CardContent(1, "3", 'white', 0, 0);
-	var c4c = new CardContent(1, "4", 'white', 0, 0);
-	var c5c = new CardContent(1, "5", 'white', 0, 0);
-	var c6c = new CardContent(1, "6", 'white', 0, 0);
-	var c7c = new CardContent(1, "7", 'white', 0, 0);
-	var c8c = new CardContent(1, "8", 'white', 0, 0);
-	var c9c = new CardContent(1, "9", 'white', 0, 0);
-	var c1c = new CardContent(1, "1", 'white', 0, 0);
+	var c0c = new CardContent(1, "Men's Rights activisim bleeding into the brony fandom", 'white', 0, 0); //Use CardContent to make cards.
+	var c2c = new CardContent(1, "An AR-15 Assault Rifle", 'white', 0, 0);
+	var c3c = new CardContent(1, "Josh, Chris, and Evan getting hilariously gangbanged by the Blue Man Group", 'white', 0, 0);
+	var c4c = new CardContent(1, "Miley Cyrus at 55", 'white', 0, 0);
+	var c5c = new CardContent(1, "A Lego Model of a national tragedy", 'white', 0, 0);
+	var c6c = new CardContent(1, "Bees?", 'white', 0, 0);
+	var c7c = new CardContent(1, "Oprah Winfrey", 'white', 0, 0);
+	var c8c = new CardContent(1, "An episode of 'The Magic Schoolbus' where everyone dies", 'white', 0, 0);
+	var c9c = new CardContent(1, "A brand new pair of Timbs", 'white', 0, 0);
+	var c1c = new CardContent(1, "Deadass", 'white', 0, 0);
 	card = new Card(c0c, 300, 300, 0, false); //Example of a card.
 	c2 = new Card(c2c, 200, 100, 0, false);
 	c3 = new Card(c3c, 0, 0, 0, false);
@@ -51,6 +51,9 @@ function setup() {
 	c8 = new Card(c8c, 0, 0, 0, false);
 	c9 = new Card(c9c, 0, 0, 0, false);
 	c1 = new Card(c1c, 0, 0, 0, false);
+	
+	b1c = new CardContent(1, "What ruined the class field Trip?", 'black', 0, 1);
+	b1 = new Card(b1c, 0, 0, 0, false);
 	//card.flip();
 	var cards = [];
 	cards.push(card);
@@ -103,6 +106,7 @@ function draw() {
 	//card.draw(300, 600, 2);
 	ps.draw();
 	hand.draw(ps);
+	b1.draw(100, 300, 0);
 	
 	//bundle.draw(300, 200, 0);
 	
@@ -277,6 +281,28 @@ function PlaySpace(cardsNeeded) {
 		console.log("Not Yet Implemented.");
 	}
 }
+//PickSpace is where the czar selects the winner. Sort of like playspace. ALso must be able to be controlled by the server.
+function PickSpace(blackCard, bundles) {
+	this.blackCard = blackCard;
+	this.bundles = bundles;
+	this.selected = -1;
+	this.draw = function() {
+		//Draw the black card.
+		
+		//Did the czar scroll or swipe? Change selected to the proper bundle.
+		
+		//Draw the current bundle, but draw each card individually.
+		
+		//Draw the surrounding bundles.
+		
+		//Draw the pick button.
+		
+	}
+	//Send back the winning cards and let the server determine who won.
+	this.pick = function(bundle) {
+		
+	}
+}
 function Button(x, y, value, callback) {
 	this.x = x;
 	this.y = y;
@@ -314,6 +340,7 @@ function Button(x, y, value, callback) {
 			rect(this.x, this.y, this.w, this.h, 5);
 			noStroke();
 			textSize(vars.smallTextSize);
+			textStyle(BOLD);
 			textAlign(CENTER);
 			fill(vars.foregroundColor);
 			text(this.value, this.x, this.y + vars.smallTextSize / 2.5);	
@@ -485,10 +512,12 @@ function Card(content, x, y, rotation, focused) {
 		if (this.flipped) { 
 			// Back of the card.
 			textAlign(CENTER);
+			textStyle(BOLD);
 			text("TRIGGER WARNING", 0, 0, cardWidth - 20, 50);
 		} else { 
 			//Front of the card.
 			textAlign(LEFT);
+			textStyle(BOLD);
 			text(this.content.fullText, 0, 0, cardWidth - 30, cardHeight - 30);
 		}
 		

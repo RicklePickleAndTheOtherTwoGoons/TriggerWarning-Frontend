@@ -129,6 +129,10 @@ function keyPressed() {
 	}
 	
 }
+function mousePressed() {
+	vars.mousePressedX = mouseX;
+	vars.mousePressedY = mouseY;
+}
 
 /** Objects **/
 function CanvasVars() {
@@ -145,6 +149,9 @@ function CanvasVars() {
 	this.largeTextSize;
 	this.mediumTextSize;
 	this.smallTextSize;
+	
+	this.mousePressedX;//Position of the mouse when the button was pressed.
+	this.mousePressedY;
 	
 	this.calculate = function () {
 		this.xCenter = width / 2;
@@ -216,6 +223,16 @@ function PlaySpace(cardsNeeded) {
 			default:
 				console.log("Invalid cardsNeeded amount: " + this.cardsNeeded);
 		}
+		//Determine if a filled playspace has been clicked, signalling that the user wants to return a card to their hand.
+		if (mouseIsPressed) {
+			for (var i = 0; i < this.cardsNeeded; i++) {
+				if (this.currentlyPlaying[i] != undefined && this.cardSpaces[i].containsPoint(vars.mousePressedX, vars.mousePressedY)) {
+					console.log("Returning a card to your hand.");
+					hand.addCard(this.currentlyPlaying[i]);
+					this.currentlyPlaying[i] = undefined;
+				}
+			}
+		}
 		//Find out if all cardSpaces have been filled, and display the submit button if they have.
 		var complete = true;
 		for (var i = 0; i < this.cardsNeeded; i++) {
@@ -280,8 +297,8 @@ function Button(x, y, value, callback) {
 		if (this.visible) {
 			//Step
 			if (mouseIsPressed && this.disable == -1) {
-				if (mouseX > this.x - this.w / 2 && mouseX < this.x + this.w / 2) {
-					if (mouseY > this.y - this.h / 2 && mouseY < this.y + this.h / 2) {
+				if (vars.mousePressedX > this.x - this.w / 2 && vars.mousePressedX < this.x + this.w / 2) {
+					if (vars.mousePressedY > this.y - this.h / 2 && vars.mousePressedY < this.y + this.h / 2) {
 						this.clicked();
 						//Disable for .5 seconds to avoid sending multiple messages.
 						this.disable = frameCount + 15;
@@ -338,8 +355,8 @@ function TextBox(x, y, length) {
 		if (this.visible) {
 			//Step
 			if (mouseIsPressed) {
-				if (mouseX > this.x - (this.w / 2) && mouseX < (this.x + this.w / 2)) {
-					if (mouseY > this.y - (this.h / 2) && mouseY < this.y + (this.h / 2)) {
+				if (vars.mousePressedX > this.x - (this.w / 2) && vars.mousePressedX < (this.x + this.w / 2)) {
+					if (vars.mousePressedY > this.y - (this.h / 2) && vars.mousePressedY < this.y + (this.h / 2)) {
 						this.clicked();
 					} else {
 						this.defocus();
